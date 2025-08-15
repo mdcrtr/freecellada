@@ -3,7 +3,7 @@ with Card_Containers;
 
 package Freecell_Game is
 
-   type Container_Index_Type is range 0 .. 15;
+   subtype Container_Index_Type is Card_Containers.ID_Type;
    type Container_List_Type is
      array (Container_Index_Type) of Card_Containers.Container_Type;
 

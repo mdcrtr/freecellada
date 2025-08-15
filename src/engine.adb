@@ -21,6 +21,11 @@ package body Engine is
       return (C_float (V.X), C_float (V.Y));
    end To_Vec2;
 
+   function To_Vector_2 (V : Raylib.Vector2) return Vector_2 with Inline is
+   begin
+      return (Float (V.x), Float (V.y));
+   end To_Vector_2;
+
    procedure Init is
    begin
       Raylib.InitWindow (1400, 900, "Freecell");
@@ -38,6 +43,23 @@ package body Engine is
    begin
       return not Boolean (Raylib.WindowShouldClose);
    end Is_Running;
+
+   function Is_Mouse_Pressed return Boolean is
+   begin
+      return Boolean (Raylib.IsMouseButtonPressed (Raylib.MOUSE_BUTTON_LEFT));
+   end Is_Mouse_Pressed;
+
+   function Is_Undo_Key_Pressed return Boolean is
+   begin
+      return Boolean (Raylib.IsKeyPressed (Raylib.KEY_Z));
+   end Is_Undo_Key_Pressed;
+
+   function Get_Mouse_World_Coords return Vector_2 is
+   begin
+      return
+        To_Vector_2
+          (Raylib.GetScreenToWorld2D (Raylib.GetMousePosition, Camera));
+   end Get_Mouse_World_Coords;
 
    procedure Begin_Drawing is
    begin

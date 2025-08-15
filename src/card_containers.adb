@@ -13,7 +13,7 @@ package body Card_Containers is
          return False;
       end if;
 
-      for I in Natural range 0 .. Integer (Card_List.Length) - 1 loop
+      for I in Natural range 0 .. Card_List.Last_Index - 1 loop
          if not Cards.Is_Sequential (Card_List (I), Card_List (I + 1)) then
             return False;
          end if;
@@ -31,7 +31,7 @@ package body Card_Containers is
          Height := Cards.Height;
       end if;
 
-      return (Self.Position.X, Self.Position.X, Cards.Width, Height);
+      return (Self.Position.X, Self.Position.Y, Cards.Width, Height);
    end Get_Bounds;
 
    function Create
