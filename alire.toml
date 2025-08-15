@@ -1,0 +1,17 @@
+name = "freecellada"
+description = "Freecell card game implemented in Ada using Raylib"
+version = "0.1.0-dev"
+
+authors = ["mdcrtr"]
+maintainers = ["mdcrtr <example@example.com>"]
+licenses = "MIT"
+website = ""
+tags = []
+
+executables = ["freecellada"]
+
+[[depends-on]]
+raylib = "~0.1.0-dev"
+
+[[pins]]
+raylib = { url='https://github.com/Fabien-Chouteau/raylib-ada.git' }
