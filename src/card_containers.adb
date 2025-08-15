@@ -1,10 +1,13 @@
 with Ada.Containers;
+with Atlas;
+with Engine;
 
 use type Ada.Containers.Count_Type;
 
 package body Card_Containers is
 
-   function Is_Alternating_Sequence (Card_List : CV.Vector) return Boolean is
+   function Is_Alternating_Sequence
+     (Card_List : Card_Vecs.Vector) return Boolean is
    begin
       if Card_List.Length < 2 then
          return False;
@@ -38,7 +41,7 @@ package body Card_Containers is
       return
         (ID        => ID,
          Kind      => Kind,
-         Card_List => CV.Empty_Vector,
+         Card_List => Card_Vecs.Empty_Vector,
          Position  => Position,
          Dirty     => False);
    end Create;
@@ -49,7 +52,14 @@ package body Card_Containers is
       Self.Dirty := True;
    end Pop;
 
-   procedure Push (Self : in out Container_Type; Card_List : CV.Vector) is
+   procedure Push (Self : in out Container_Type; Card : Cards.Card_Type) is
+   begin
+      Self.Card_List.Append (Card);
+      Self.Dirty := True;
+   end Push;
+
+   procedure Push (Self : in out Container_Type; Card_List : Card_Vecs.Vector)
+   is
    begin
       for Card of Card_List loop
          Self.Card_List.Append (Card);
@@ -57,8 +67,10 @@ package body Card_Containers is
       Self.Dirty := True;
    end Push;
 
-   function Peek (Self : Container_Type; Count : Positive) return CV.Vector is
-      Card_List : CV.Vector;
+   function Peek
+     (Self : Container_Type; Count : Positive) return Card_Vecs.Vector
+   is
+      Card_List : Card_Vecs.Vector;
       First     : Natural;
    begin
       if Self.Card_List.Length >= Ada.Containers.Count_Type (Count) then
@@ -125,7 +137,7 @@ package body Card_Containers is
    end Card_At;
 
    function Can_Pop (Self : Container_Type; Count : Positive) return Boolean is
-      Card_List : CV.Vector;
+      Card_List : Card_Vecs.Vector;
    begin
       case Self.Kind is
          when Slide =>
@@ -139,7 +151,7 @@ package body Card_Containers is
    end Can_Pop;
 
    function Can_Push
-     (Self : Container_Type; Card_List : CV.Vector) return Boolean
+     (Self : Container_Type; Card_List : Card_Vecs.Vector) return Boolean
    is
       Top_Card        : Cards.Card_Type;
       Top_Card_Exists : Boolean;
@@ -219,6 +231,8 @@ package body Card_Containers is
 
    procedure Draw (Self : Container_Type) is
    begin
+      Engine.Draw_Sprite (Atlas.Card_Border, Self.Position);
+
       if Self.Kind = Slide then
          for C of Self.Card_List loop
             C.Draw;

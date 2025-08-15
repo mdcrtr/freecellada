@@ -4,7 +4,7 @@ with Common; use Common;
 
 package Card_Containers is
 
-   package CV is new
+   package Card_Vecs is new
      Ada.Containers.Vectors
        (Index_Type   => Natural,
         Element_Type => Cards.Card_Type,
@@ -20,7 +20,7 @@ package Card_Containers is
    type Container_Type is tagged record
       ID        : ID_Type;
       Kind      : Kind_Type;
-      Card_List : CV.Vector;
+      Card_List : Card_Vecs.Vector;
       Position  : Vector_2;
       Dirty     : Boolean;
    end record;
@@ -31,9 +31,12 @@ package Card_Containers is
 
    procedure Pop (Self : in out Container_Type; Count : Positive);
 
-   procedure Push (Self : in out Container_Type; Card_List : CV.Vector);
+   procedure Push (Self : in out Container_Type; Card : Cards.Card_Type);
 
-   function Peek (Self : Container_Type; Count : Positive) return CV.Vector;
+   procedure Push (Self : in out Container_Type; Card_List : Card_Vecs.Vector);
+
+   function Peek
+     (Self : Container_Type; Count : Positive) return Card_Vecs.Vector;
 
    procedure Peek_Top
      (Self : Container_Type; Card : out Cards.Card_Type; OK : out Boolean);
@@ -49,7 +52,7 @@ package Card_Containers is
    function Can_Pop (Self : Container_Type; Count : Positive) return Boolean;
 
    function Can_Push
-     (Self : Container_Type; Card_List : CV.Vector) return Boolean;
+     (Self : Container_Type; Card_List : Card_Vecs.Vector) return Boolean;
 
    function Is_Hit (Self : Container_Type; Point : Vector_2) return Boolean;
 
