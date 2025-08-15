@@ -52,6 +52,9 @@ package Card_Containers is
    function Can_Pop (Self : Container_Type; Count : Positive) return Boolean;
 
    function Can_Push
+     (Self : Container_Type; Card : Cards.Card_Type) return Boolean;
+
+   function Can_Push
      (Self : Container_Type; Card_List : Card_Vecs.Vector) return Boolean;
 
    function Is_Hit (Self : Container_Type; Point : Vector_2) return Boolean;

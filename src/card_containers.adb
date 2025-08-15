@@ -151,6 +151,34 @@ package body Card_Containers is
    end Can_Pop;
 
    function Can_Push
+     (Self : Container_Type; Card : Cards.Card_Type) return Boolean
+   is
+      Top_Card        : Cards.Card_Type;
+      Top_Card_Exists : Boolean;
+   begin
+      Peek_Top (Self, Top_Card, Top_Card_Exists);
+
+      case Self.Kind is
+         when Slide =>
+            return
+              (not Top_Card_Exists)
+              or else Cards.Is_Sequential (Top_Card, Card);
+
+         when Slot =>
+            return not Top_Card_Exists;
+
+         when Stack =>
+            if not Top_Card_Exists then
+               return Card.Rank = 1;
+            end if;
+
+            return
+              Top_Card.Suit = Card.Suit
+              and then Integer (Card.Rank) - Integer (Top_Card.Rank) = 1;
+      end case;
+   end Can_Push;
+
+   function Can_Push
      (Self : Container_Type; Card_List : Card_Vecs.Vector) return Boolean
    is
       Top_Card        : Cards.Card_Type;
@@ -170,7 +198,7 @@ package body Card_Containers is
             return Cards.Is_Sequential (Top_Card, Card_List.First_Element);
 
          when Slot =>
-            return Self.Card_List.Is_Empty and then Card_List.Length = 1;
+            return (not Top_Card_Exists) and then Card_List.Length = 1;
 
          when Stack =>
             if not Top_Card_Exists then

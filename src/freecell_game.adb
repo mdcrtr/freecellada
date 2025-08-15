@@ -8,7 +8,7 @@ package body Freecell_Game is
    package Natural_Random is new Ada.Numerics.Discrete_Random (Natural);
 
    subtype Slide_Index_Type is Container_Index_Type range 0 .. 7;
-   subtype Slot_Index_Type is Container_Index_Type range 8 .. 11;
+   subtype Slots_And_Slides_Index_Type is Container_Index_Type range 0 .. 11;
    subtype Stack_Index_Type is Container_Index_Type range 12 .. 15;
 
    RNG : Natural_Random.Generator;
@@ -38,6 +38,23 @@ package body Freecell_Game is
       end loop;
    end Shuffle_Deck;
 
+   function Get_Maximum_Move_Count (Self : Game_Type) return Natural is
+      use type Card_Containers.Kind_Type;
+
+      Free_Slides : Natural := 0;
+      Free_Slots  : Natural := 0;
+   begin
+      for C of Self.Container_List loop
+         if C.Kind = Card_Containers.Slide and then C.Card_List.Is_Empty then
+            Free_Slides := Free_Slides + 1;
+         elsif C.Kind = Card_Containers.Slot and then C.Card_List.Is_Empty then
+            Free_Slots := Free_Slots + 1;
+         end if;
+      end loop;
+
+      return (2**Free_Slides) * (Free_Slots + 1);
+   end Get_Maximum_Move_Count;
+
    procedure Pick_Container
      (Self  : Game_Type;
       Point : Vector_2;
@@ -63,7 +80,6 @@ package body Freecell_Game is
       Container_ID_OK : Boolean;
       Card_OK         : Boolean;
       Card_Count      : Natural;
-      Selected_Cards  : Card_Containers.Card_Vecs.Vector;
    begin
       Mouse_World_Pos := Engine.Get_Mouse_World_Coords;
 
@@ -80,6 +96,9 @@ package body Freecell_Game is
       end if;
 
       Card_Count := Self.Container_List (Container_ID).Count_From (Card_Index);
+      if Card_Count > Get_Maximum_Move_Count (Self) then
+         return;
+      end if;
 
       if not Self.Container_List (Container_ID).Can_Pop (Card_Count) then
          return;
@@ -124,6 +143,35 @@ package body Freecell_Game is
       Self.Container_List (Command.Src_Container_ID).Push (Selected_Cards);
       Self.Container_List (Command.Dst_Container_ID).Pop (Command.Card_Count);
    end Undo_Command;
+
+   procedure Auto_Fill_Stacks (Self : in out Game_Type) is
+      Keep_Moving : Boolean := True;
+      Counter     : Natural := 100;
+      Top_Card    : Cards.Card_Type;
+      Top_Card_OK : Boolean;
+   begin
+      while Keep_Moving and then Counter > 0 loop
+         Counter := Counter - 1;
+         Keep_Moving := False;
+
+         for I in Slots_And_Slides_Index_Type loop
+            Self.Container_List (I).Peek_Top (Top_Card, Top_Card_OK);
+            if Top_Card_OK then
+               for J in Stack_Index_Type loop
+                  if Self.Container_List (J).Can_Push (Top_Card) then
+                     Do_Command
+                       (Self,
+                        (Src_Container_ID => I,
+                         Dst_Container_ID => J,
+                         Card_Count       => 1));
+                     Keep_Moving := True;
+                     exit;
+                  end if;
+               end loop;
+            end if;
+         end loop;
+      end loop;
+   end Auto_Fill_Stacks;
 
    procedure Drop_Card (Self : in out Game_Type) is
       Src_ID : constant Container_Index_Type := Self.Src_Container_ID;
@@ -222,6 +270,7 @@ package body Freecell_Game is
          when Putting =>
             if Engine.Is_Mouse_Pressed then
                Drop_Card (Self);
+               Auto_Fill_Stacks (Self);
                Self.State := Picking;
             end if;
       end case;
